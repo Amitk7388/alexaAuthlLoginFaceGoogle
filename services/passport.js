@@ -31,6 +31,7 @@ passport.use(
     },
     (email, password, done) => {
       // Finding the user in the DB
+      console.log(email+ password)
       User.findOne({ email }, (err, user) => {
         if (err) {
           return done(err);
@@ -38,10 +39,13 @@ passport.use(
         if (!user) {
           return done(null, false, { message: "User not Found" });
         }
-        if (validPassword(password, user.password)) {
-          return done(null, false, { message: "Incorrect Password" });
+
+        if(!bcrypt.compareSync(password, user.password)){
+          return done(null, false , {message:'password is incoorect'})
         }
+        console.log('sucssfully password is valid')
         return done(null, user);
+        
       });
     }
   )
@@ -52,14 +56,15 @@ passport.use(
 passport.use(
   new googleStrategy(
     {
-      clientID: "183278019820-slrrbdh9f0dchg72a73l28267ht7muqi.apps.googleusercontent.com",
-      clientSecret: "YYQhLNaO3lLGc-IZ-Ciuxm21 ",
-      callbackURL: "http://127.0.0.1:3000/auth/google/callbacks"
+      clientID: "73759076416-f0m22op9fhh6j57qherlm827qjsus6e7.apps.googleusercontent.com",
+      clientSecret: "FTEPml5jUbsB3IXBVrWyC6Fe",
+      callbackURL: "http://localhost:3000/auth/google/callbacks"
     },
     async (accessToken, refreshToken, profile, done) => {
       const existingUser = await User.findOne({
         email: profile.emails[0].value
-      });
+      
+      }, console.log(profile));
       if (existingUser) {
         return done(null, existingUser);
       }
@@ -68,8 +73,10 @@ passport.use(
         firstName: profile.displayName.split(" ")[0],
         lastName: profile.displayName.split(" ")[1],
         email: profile.emails[0].value,
-        DOB: profile.birthday
+        DOB: profile.birthday,
+        through : 'google'
       }).save();
+      console.log(user)
       done(null, user);
     }
   )
@@ -80,36 +87,30 @@ passport.use(
 passport.use(
   new facebookStrategy(
     {
-      clientID: "<@TODO Add your credentials>",
-      clientSecret: "<@TODO Add your credentials>",
-      callbackURL: "/auth/facebook/callback",
+      clientID: "2184697331780991",
+      clientSecret: "c3be638bc4e5fe152b70d340a7e9dcdc",
+      callbackURL: "http://localhost:3000/auth/facebook/callbacks",
       enableProof: true,
       profileFields: ["id", "emails", "name", "birthday"]
     },
     async (accessToken, refreshToken, profile, done) => {
       const existingUser = await User.findOne({
         email: profile.emails[0].value
-      });
+      }, console.log(profile));
       if (existingUser) {
         return done(null, existingUser);
       }
+      
       const user = await new User({
         firstName: profile.name.givenName,
         lastName: profile.name.familyName,
         email: profile.emails[0].value,
-        DOB: profile.birthday
+        DOB: profile.birthday,
+        through : 'facebook'
       }).save();
+      console.log(user)
       done(null, user);
     }
   )
 );
 
-//Function to check password with DB
-function validPassword(password, hashedPassword) {
-  bcrypt.compare(password, hashedPassword).then(res => {
-    if (res) {
-      return true;
-    }
-  });
-  return false;
-}

@@ -9,6 +9,18 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 
 module.exports = app => {
+
+  app.get('/', (req, res) =>{
+    res.render('index.ejs')
+  })
+
+  app.get('/user/login', (req, res)=>{
+    res.render('login.ejs')
+  })
+
+  app.get('/user/signup', (req, res)=>{
+    res.render('signup.ejs')
+  })
   // Register a User route
   app.post("/user/signup", (req, res) => {
     //Register the User to the DB
@@ -26,6 +38,7 @@ module.exports = app => {
                   email: req.body.email,
                   password: hash,
                   DOB: req.body.dob,
+                  through : 'local',
                   salt
                 };
 
@@ -53,21 +66,27 @@ module.exports = app => {
   //Login the User
   app.post("/user/login", passport.authenticate("local"), (req, res) => {
     // @TODO add logic of what to do after login
-    res.status(200);
+    res.status(200).send('sucessfully loged in');
+    
   });
 
   //Google OAuth2
   app.get(
     "/auth/google",
-    passport.authenticate("google", { scope: ["profile", "email"] })
+    
+    passport.authenticate("google", { scope: ["profile", "email"] }), function(req, res){
+      console.log('this auth is working')
+    }
+
+    
   );
 
   app.get(
-    "/auth/google/callback",
-    passport.authenticate("google"),
+    "/auth/google/callbacks",
+    passport.authenticate("google", { failureRedirect: '/login'}),
     (req, res) => {
       // @TODO add logic of what to do after login
-      res.status(200);
+      res.status(200).send('authenticated sucessfully');
     }
   );
 
@@ -78,11 +97,11 @@ module.exports = app => {
   );
 
   app.get(
-    "/auth/facebook/callback",
+    "/auth/facebook/callbacks",
     passport.authenticate("facebook"),
     (req, res) => {
       // @TODO add logic of what to do after login
-      res.status(200);
+      res.status(200).send('sucessfully created');
     }
   );
 

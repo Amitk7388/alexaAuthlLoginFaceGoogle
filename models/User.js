@@ -13,7 +13,11 @@ const usersSchema = new Schema({
   email: String,
   password: String,
   salt: String,
-  DOB: String
+  DOB: String,
+  through : String
+  
 });
 
 module.exports = mongoose.model("user", usersSchema);
+
+

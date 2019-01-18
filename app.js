@@ -20,6 +20,7 @@ require("./models/User");
 // Passport - Services
 require("./services/passport");
 
+app.set('view engine', 'ejs');
 //Configuration
 app.use(cookieParser());
 app.use(

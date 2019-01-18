@@ -6,7 +6,7 @@
 const mongoose = require("mongoose");
 
 //@TODO add DB url
-const DB = "https://localhost/test";
+const DB = "mongodb://localhost/test";
 mongoose.connect(
   DB,
   { useNewUrlParser: true }
